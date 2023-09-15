@@ -1,0 +1,31 @@
+FROM php:7.4-fpm-alpine
+
+RUN apk update && apk upgrade
+
+RUN apk add grpc
+RUN apk add protobuf
+RUN apk add composer
+
+RUN apk add libstdc++
+RUN apk add zlib-dev
+RUN apk add git make g++ unzip autoconf automake libtool file openssl curl
+RUN apk add linux-headers
+
+RUN pecl install grpc
+RUN pecl install protobuf
+
+RUN docker-php-ext-install pdo_mysql
+RUN apk add php-pdo php-pdo_mysql php-mysqli php-phar
+
+RUN echo "extension=grpc.so" >> /usr/local/etc/php/conf.d/docker-php-ext-grpc.ini
+RUN echo "extension=protobuf.so" >> /usr/local/etc/php/conf.d/docker-php-ext-protobuf.ini
+# RUN echo "extension=mysql.so" >> /usr/local/etc/php/conf.d/docker-php-ext-pdo.ini
+# RUN echo "extension=pdo.so" >> /usr/local/etc/php/conf.d/docker-php-ext-pdo.ini
+# RUN echo "extension=pdo_mysql.so" >> /usr/local/etc/php/conf.d/docker-php-ext-pdo.ini
+
+WORKDIR /var/www/html
+EXPOSE 9000
+
+ADD . /var/www/html
+
+RUN "composer" "dump-autoload"

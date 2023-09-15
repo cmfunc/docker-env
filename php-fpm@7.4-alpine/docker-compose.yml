@@ -1,0 +1,40 @@
+version: "3"
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    ports: 
+      - "8083:80"
+    networks:
+      - internal
+    volumes:
+      - ./data/:/var/www/html/
+      - ./logs/nginx:/var/log/nginx/
+    depends_on:
+      - php
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile-php
+    networks:
+      - internal
+    volumes:
+      - /Users/aha_cm/Documents/ahaverse_cms:/var/www/html/
+      - ./logs/php.log:/var/log/fpm-php.www.log
+    depends_on:
+      - mysql
+    links:
+      - "mysql"
+  mysql:
+    image: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456 #访问密码
+    networks:
+      - internal
+    
+networks:
+  internal:
+    driver: bridge
