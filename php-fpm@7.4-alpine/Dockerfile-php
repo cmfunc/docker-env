@@ -23,9 +23,29 @@ RUN echo "extension=protobuf.so" >> /usr/local/etc/php/conf.d/docker-php-ext-pro
 # RUN echo "extension=pdo.so" >> /usr/local/etc/php/conf.d/docker-php-ext-pdo.ini
 # RUN echo "extension=pdo_mysql.so" >> /usr/local/etc/php/conf.d/docker-php-ext-pdo.ini
 
+# RUN apk add libfreetype6-dev libjpeg62-turbo-dev libpng-dev
+# RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+# RUN docker-php-ext-install -j$(nproc) gd
+# RUN apk add libicu-dev 
+# RUN docker-php-ext-configure intl 
+# RUN docker-php-ext-install intl
+RUN pecl channel-update pecl.php.net
+RUN pecl install xdebug-2.8.1
+RUN docker-php-ext-enable xdebug
+
+RUN echo "xdebug.remote_enable=1\n\
+xdebug.remote_autostart=1\n\
+xdebug.remote_connect_back=0\n\
+xdebug.remote_port=9001\n\
+xdebug.remote_host=docker.for.mac.localhost\n\
+xdebug.remote_handler=dbgp" >> /usr/local/etc/php/conf.d/xdebug.ini \
+&& sed -i 's/request_terminate_timeout/;request_terminate_timeout/' /usr/local/etc/php-fpm.d/www.conf
+
 WORKDIR /var/www/html
 EXPOSE 9000
 
 ADD . /var/www/html
 
 RUN "composer" "dump-autoload"
+
+CMD ["php-fpm","--allow-to-run-as-root"]
